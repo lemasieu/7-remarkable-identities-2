@@ -1,57 +1,4 @@
-// 1. Hàm sinh ngẫu nhiên A và B dưới dạng Object { coeff: hệ số, var: biến }
-function generateAB() {
-    const coeffs = [2, 3, 4, 5];
-    const vars = ['x', 'y', 'a', 'b', 'z', 't'];
-    
-    const c1 = coeffs[Math.floor(Math.random() * coeffs.length)];
-    const c2 = coeffs[Math.floor(Math.random() * coeffs.length)];
-    const v1 = vars[Math.floor(Math.random() * 3)];       // x, y, a
-    const v2 = vars[Math.floor(Math.random() * 3) + 3];   // b, z, t
-    
-    // Trộn cấu trúc ngẫu nhiên: (Số+Biến và Số+Biến) hoặc (Số+Biến và Hằng số)
-    const style = Math.floor(Math.random() * 3);
-    if (style === 0) {
-        return { A: { coeff: c1, var: v1 }, B: { coeff: c2, var: v2 } };
-    } else if (style === 1) {
-        return { A: { coeff: c1, var: v1 }, B: { coeff: c2, var: '' } };
-    } else {
-        return { A: { coeff: c1, var: '' }, B: { coeff: c2, var: v2 } };
-    }
-}
-
-// 2. Hiển thị số hạng cơ bản (Ví dụ: 2x, 3y, hoặc 5)
-function strTerm(t) {
-    if (!t.var) return `${t.coeff}`;
-    if (t.coeff === 1) return t.var;
-    return `${t.coeff}${t.var}`;
-}
-
-// 3. Tính lũy thừa số hạng (Ví dụ: (2x)^2 -> 4x^2)
-function strPower(t, p) {
-    const c = Math.pow(t.coeff, p);
-    if (!t.var) return `${c}`;
-    const v = `${t.var}<sup>${p}</sup>`;
-    if (c === 1) return v;
-    return `${c}${v}`;
-}
-
-// 4. Tính tích các hạng tử và tự động thêm dấu "." rút gọn (Ví dụ: 2 * 2x * 3y -> 12.x.y)
-function strProduct(factor, t1, p1, t2, p2) {
-    const c1 = Math.pow(t1.coeff, p1);
-    const c2 = t2 ? Math.pow(t2.coeff, p2) : 1;
-    const totalCoeff = factor * c1 * c2;
-
-    let v1 = t1.var ? (p1 === 1 ? t1.var : `${t1.var}<sup>${p1}</sup>`) : '';
-    let v2 = (t2 && t2.var) ? (p2 === 1 ? t2.var : `${t2.var}<sup>${p2}</sup>`) : '';
-
-    let varStr = '';
-    if (v1 && v2) varStr = `${v1}.${v2}`;
-    else varStr = v1 || v2;
-
-    if (!varStr) return `${totalCoeff}`;
-    if (totalCoeff === 1) return varStr;
-    return `${totalCoeff}.${varStr}`; // Định dạng chuẩn hóa: Hệ số.Biến1.Biến2
-}
+// --- 1. CÁC HÀM BỔ TRỢ XỬ LÝ TOÁN HỌC ĐƯỢC NÂNG CẤP SỐ MŨ ---
 
 // Hàm xáo trộn mảng hiện đại (Fisher-Yates)
 function shuffle(array) {
@@ -62,31 +9,91 @@ function shuffle(array) {
     return array;
 }
 
-// Thay thế các ký tự đại diện {A} và {B}
-function replaceAll(str, A, B) {
-    return str.replace(/\{A\}/g, A).replace(/\{B\}/g, B);
-}
-
-// Xây dựng chuỗi đa thức dạng tổng từ mảng các hạng tử có kèm dấu sẵn
-function buildSum(terms, A, B) {
-    let processed = terms.map(t => replaceAll(t, A, B));
+// Xây dựng chuỗi đa thức dạng tổng từ mảng các hạng tử
+function buildSum(terms) {
+    let processed = [...terms];
     shuffle(processed);
     let res = processed.join(" ").trim();
-    // Nếu hạng tử nhảy lên đầu tiên mang dấu cộng, ta sẽ bỏ dấu đi cho đẹp
     if (res.startsWith("+ ")) {
         res = res.substring(2);
     }
     return res;
 }
 
-// Xây dựng chuỗi dạng tích (nối với nhau bằng dấu chấm)
-function buildProduct(blocks, A, B) {
-    let processed = blocks.map(b => replaceAll(b, A, B));
-    shuffle(processed);
-    return processed.join(".");
+// 1. Hàm sinh ngẫu nhiên A và B: Thêm thuộc tính 'exp' (số mũ từ 1 đến 3)
+function generateAB() {
+    const coeffs = [2, 3, 4, 5];
+    const vars = ['x', 'y', 'a', 'b', 'z', 't'];
+    
+    const c1 = coeffs[Math.floor(Math.random() * coeffs.length)];
+    const c2 = coeffs[Math.floor(Math.random() * coeffs.length)];
+    const v1 = vars[Math.floor(Math.random() * 3)];       // x, y, a
+    const v2 = vars[Math.floor(Math.random() * 3) + 3];   // b, z, t
+    
+    // Sinh số mũ ngẫu nhiên từ 1 đến 3
+    const e1 = Math.floor(Math.random() * 3) + 1;
+    const e2 = Math.floor(Math.random() * 3) + 1;
+    
+    const style = Math.floor(Math.random() * 3);
+    if (style === 0) {
+        return { A: { coeff: c1, var: v1, exp: e1 }, B: { coeff: c2, var: v2, exp: e2 } };
+    } else if (style === 1) {
+        return { A: { coeff: c1, var: v1, exp: e1 }, B: { coeff: c2, var: '', exp: 0 } };
+    } else {
+        return { A: { coeff: c1, var: '', exp: 0 }, B: { coeff: c2, var: v2, exp: e2 } };
+    }
 }
 
-// Định nghĩa 7 hằng đẳng thức đáng nhớ 
+// 2. Hiển thị số hạng cơ bản (Ví dụ: 2x^2 thay vì chỉ 2x)
+function strTerm(t) {
+    if (!t.var) return `${t.coeff}`;
+    const vStr = t.exp === 1 ? t.var : `${t.var}<sup>${t.exp}</sup>`;
+    if (t.coeff === 1) return vStr;
+    return `${t.coeff}${vStr}`;
+}
+
+// 3. Tính lũy thừa số hạng (Tự động nhân dồn số mũ: (2x^2)^3 -> 8x^6)
+function strPower(t, p) {
+    const c = Math.pow(t.coeff, p);
+    if (!t.var) return `${c}`; // Nếu là hằng số tự do
+    
+    const newExp = t.exp * p;
+    const vStr = newExp === 1 ? t.var : `${t.var}<sup>${newExp}</sup>`;
+    
+    if (c === 1) return vStr;
+    return `${c}${vStr}`;
+}
+
+// 4. Tính tích các hạng tử và gộp số mũ (Ví dụ: 3 * (2x^2)^2 * (3y^3)^1 -> 36.x^4.y^3)
+function strProduct(factor, t1, p1, t2, p2) {
+    const c1 = Math.pow(t1.coeff, p1);
+    const c2 = t2 ? Math.pow(t2.coeff, p2) : 1;
+    const totalCoeff = factor * c1 * c2;
+
+    let v1 = '';
+    if (t1.var) {
+        const e1 = t1.exp * p1;
+        v1 = e1 === 1 ? t1.var : `${t1.var}<sup>${e1}</sup>`;
+    }
+
+    let v2 = '';
+    if (t2 && t2.var) {
+        const e2 = t2.exp * p2;
+        v2 = e2 === 1 ? t2.var : `${t2.var}<sup>${e2}</sup>`;
+    }
+
+    let varStr = '';
+    if (v1 && v2) varStr = `${v1}.${v2}`;
+    else varStr = v1 || v2;
+
+    if (!varStr) return `${totalCoeff}`;
+    if (totalCoeff === 1) return varStr;
+    return `${totalCoeff}.${varStr}`; 
+}
+
+
+// --- 2. CẤU TRÚC 7 HẰNG ĐẲNG THỨC ĐÁNG NHỚ (Không cần sửa logic bên trong) ---
+
 const identities = [
     // 1. Bình phương của một tổng
     (A, B) => {
@@ -188,6 +195,8 @@ const identities = [
     }
 ];
 
+// --- 3. QUẢN LÝ TRẠNG THÁI UI & LOGIC TRÒ CHƠI ---
+
 let correctQuestions = 0;
 let totalQuestions = 0;
 
@@ -196,32 +205,25 @@ function initQuestion() {
     const optionsContainer = document.getElementById('options');
     optionsContainer.innerHTML = '';
 
-    // 1. Lấy ngẫu nhiên hằng đẳng thức từ danh sách
     const randomIdentityFn = identities[Math.floor(Math.random() * identities.length)];
-    
-    // 2. THAY ĐỔI TẠI ĐÂY: Sử dụng hàm sinh Object {coeff, var} thay vì ký tự thô
-    const { A, B } = generateAB();
+    const { A, B } = generateAB(); // Object A và B giờ đây đã mang theo thuộc tính 'exp'
 
-    // 3. Sinh ngẫu nhiên chiều thuận hoặc nghịch
     const instance = randomIdentityFn(A, B);
     const direction = Math.floor(Math.random() * 2); 
     const data = (direction === 0) ? instance.forward() : instance.backward();
 
     document.getElementById('question').innerHTML = data.q + " = ?";
 
-    // 4. Trộn đáp án đúng và các đáp án nhiễu (Giữ nguyên)
     let allOptions = [
         { text: data.a, isCorrect: true },
         ...data.w.map(wText => ({ text: wText, isCorrect: false }))
     ];
     shuffle(allOptions);
 
-    // 5. Hiển thị các phương án lựa chọn (Giữ nguyên)
     allOptions.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = 'option';
         btn.innerHTML = opt.text;
-        // Sử dụng thuộc tính dataset để check câu trả lời chuẩn xác 100%
         btn.dataset.isCorrect = opt.isCorrect;
         btn.onclick = () => checkAnswer(btn, opt.isCorrect);
         optionsContainer.appendChild(btn);
@@ -239,7 +241,6 @@ function checkAnswer(selectedBtn, isCorrect) {
         correctQuestions++;
     } else {
         selectedBtn.classList.add('wrong');
-        // Cho hiển thị đáp án đúng nếu chọn sai
         buttons.forEach(btn => {
             if (btn.dataset.isCorrect === "true") {
                 btn.classList.add('correct');
@@ -247,11 +248,8 @@ function checkAnswer(selectedBtn, isCorrect) {
         });
     }
 
-    // Cập nhật thống kê tỉ lệ
     const percent = totalQuestions > 0 ? Math.round((correctQuestions / totalQuestions) * 100) : 0;
     document.getElementById('stats').innerText = `Số câu đúng: ${correctQuestions}/${totalQuestions} (${percent}%)`;
-
-    // Hiển thị nút "Câu tiếp theo" để tiếp tục kể cả khi sai
     document.getElementById('next-btn').style.display = 'inline-block';
 }
 
